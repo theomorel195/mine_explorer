@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="sonar_update_rate"  value="10" />      
+  <xacro:property name="sonar_min_range"    value="0.15" />    
+  <xacro:property name="sonar_max_range"    value="6.45" />    
+  <xacro:property name="sonar_resolution"   value="0.01" />    
+  <xacro:property name="sonar_fov_rad"      value="0.436" />   
+  <xacro:property name="sonar_samples"      value="5" />       
+  <xacro:property name="sonar_width"        value="0.022" />
+  <xacro:property name="sonar_height"       value="0.020" />
+  <xacro:property name="sonar_depth"        value="0.015" />
+
+  <xacro:macro name="maxbotix_lv_ez" params="name parent *origin topic">
+
+    <joint name="${name}_joint" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent}" />
+      <child link="${name}_link" />
+    </joint>
+
+    <link name="${name}_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${sonar_depth} ${sonar_width} ${sonar_height}" />
+        </geometry>
+        <material name="dark_grey">
+          <color rgba="0.2 0.2 0.2 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${sonar_depth} ${sonar_width} ${sonar_height}" />
+        </geometry>
+      </collision>
+    </link>
+
+    <gazebo reference="${name}_link">
+      <material>Gazebo/DarkGrey</material>
+      <sensor type="ray" name="${name}">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>true</visualize> <update_rate>${sonar_update_rate}</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>${sonar_samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>-${sonar_fov_rad/2}</min_angle>
+              <max_angle>${sonar_fov_rad/2}</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>${sonar_samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>-${sonar_fov_rad/2}</min_angle>
+              <max_angle>${sonar_fov_rad/2}</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>${sonar_min_range}</min>
+            <max>${sonar_max_range}</max>
+            <resolution>${sonar_resolution}</resolution>
+          </range>
+        </ray>
+
+        <plugin name="${name}_plugin" filename="libgazebo_ros_ray_sensor.so">
+          <ros>
+            <remapping>~/out:=${topic}</remapping>
+          </ros>
+          <output_type>sensor_msgs/Range</output_type>
+          <radiation_type>ultrasound</radiation_type>
+          <frame_name>${name}_link</frame_name>
+        </plugin>
+      </sensor>
+    </gazebo>
+    
+  </xacro:macro>
+</robot>

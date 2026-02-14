@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="realsense_gazebo" params="name:=camera topics_ns:=camera h_fov:=1.50098 min_range:=0.1 max_range:=10.0 baseline:=0.095">
+    
+    <gazebo reference="${name}_link">
+      <sensor type="depth" name="${name}">
+        <always_on>1</always_on>
+        <update_rate>15</update_rate>
+        <visualize>true</visualize>
+        <camera name="${name}">
+          <horizontal_fov>${h_fov}</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>${min_range}</near>
+            <far>${max_range}</far>
+          </clip>
+        </camera>
+
+        <plugin name="${name}_controller" filename="libgazebo_ros_camera.so">
+          <ros>
+            <namespace>${topics_ns}</namespace>
+            <remapping>image_raw:=color/image_raw</remapping>
+            <remapping>depth/image_raw:=depth/image_raw</remapping>
+            <remapping>camera_info:=color/camera_info</remapping>
+            <remapping>depth/camera_info:=depth/camera_info</remapping>
+            <remapping>points:=depth/color/points</remapping>
+          </ros>
+          
+          <camera_name>${name}</camera_name>
+          <frame_name>${name}_depth_optical_frame</frame_name>
+          <hack_baseline>${baseline}</hack_baseline>
+          <min_depth>${min_range}</min_depth>
+          <max_depth>${max_range}</max_depth>
+          
+          <publish_pointcloud>true</publish_pointcloud>
+          <publish_visualize>true</publish_visualize>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+</robot>

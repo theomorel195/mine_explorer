@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="hdl32e_standalone">
+
+  <xacro:include filename="velodyne_hdl32e.xacro" />
+
+  <link name="base_link"/>
+
+  <xacro:HDL-32E parent="base_link" name="velodyne" topic="/velodyne_points">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:HDL-32E>
+
+</robot>

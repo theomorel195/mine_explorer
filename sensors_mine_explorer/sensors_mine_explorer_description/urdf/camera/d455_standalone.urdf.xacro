@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot name="realsense2_camera" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:arg name="use_nominal_extrinsics" default="true"/>
+  
+  <xacro:include filename="$(find sensors_mine_explorer_description)/urdf/camera/realsense_d455.xacro" />
+  <xacro:include filename="$(find sensors_mine_explorer_description)/urdf/camera/common/realsense_gazebo.xacro" />
+  
+  <link name="base_link" />
+
+  <xacro:sensor_d455 parent="base_link" name="d455" use_nominal_extrinsics="$(arg use_nominal_extrinsics)">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:sensor_d455>
+
+  <xacro:realsense_gazebo 
+    name="d455" 
+    topics_ns="camera" 
+    h_fov="1.50098" 
+    min_range="0.4" 
+    max_range="10.0" 
+    baseline="0.095" />
+  
+</robot>

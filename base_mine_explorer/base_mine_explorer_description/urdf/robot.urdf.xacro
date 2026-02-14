@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="husky">
+
+  <xacro:arg name="name" default="BaseMineExplorerSystem" />
+  <xacro:arg name="prefix" default="" />
+  <xacro:arg name="use_sim" default="true" />
+
+  <xacro:include filename="$(find base_mine_explorer_description)/urdf/mobile_base/mobile_base.xacro" />
+  <xacro:base_mine_explorer name="$(arg name)" prefix="$(arg prefix)" use_sim="$(arg use_sim)"/>
+
+  <xacro:if value="$(arg use_sim)">
+
+    <gazebo>
+      <plugin name="$(arg prefix)gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+        <parameters>$(find base_mine_explorer_gazebo)/config/gazebo_controller_manager.yaml</parameters>
+      </plugin>
+    </gazebo>
+
+  </xacro:if>
+
+</robot>

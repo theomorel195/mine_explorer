@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg name)">
+   <!-- robot name parameter -->
+   <xacro:arg name="name" default="arm_mine_explorer"/>
+   <!-- import main macro -->
+   <xacro:include filename="$(find arm_mine_explorer_description)/urdf/arm/arm.xacro"/>
+
+   <!-- parameters -->
+   <xacro:arg name="prefix" default="" />
+   <xacro:arg name="joint_limit_params" default="$(find arm_mine_explorer_description)/config/joint_limits.yaml"/>
+   <xacro:arg name="kinematics_params" default="$(find arm_mine_explorer_description)/config/default_kinematics.yaml"/>
+   <xacro:arg name="physical_params" default="$(find arm_mine_explorer_description)/config/physical_parameters.yaml"/>
+   <xacro:arg name="visual_params" default="$(find arm_mine_explorer_description)/config/visual_parameters.yaml"/>
+   <xacro:arg name="safety_limits" default="false"/>
+   <xacro:arg name="safety_pos_margin" default="0.15"/>
+   <xacro:arg name="safety_k_position" default="20"/>
+   <xacro:arg name="use_sim" default="true" />
+   <xacro:arg name="simulation_controllers" default="" />
+   <xacro:arg name="initial_positions_file" default="$(find arm_mine_explorer_description)/config/initial_positions.yaml"/>
+
+   <xacro:property name="initial_positions_file" default="$(arg initial_positions_file)"/>
+   <xacro:property name="use_sim" value="$(arg use_sim)"/>
+
+   <!-- create link fixed to the "world" -->
+   <link name="world" />
+
+   <xacro:if value="${use_sim}">
+     <link name="ground_plane">
+       <visual>
+         <origin rpy="0 0 0" xyz="0 0 0"/>
+         <geometry>
+           <box size="5 5 0"/>
+         </geometry>
+         <material name="ground_white">
+           <color rgba="1 1 1 0.5"/>
+         </material>
+       </visual>
+       <collision>
+         <origin rpy="0 0 0" xyz="0 0 0"/>
+         <geometry>
+           <box size="5 5 0"/>
+         </geometry>
+       </collision>
+     </link>
+
+     <joint name="ground_plane_joint" type="fixed">
+       <origin xyz="0 0 -0.01" rpy="0 0 0"/>
+       <parent link="world"/>
+       <child link="ground_plane"/>
+     </joint>
+   </xacro:if>
+
+   <!-- arm -->
+   <xacro:arm_mine_explorer
+     name="$(arg name)"
+     prefix="$(arg prefix)"
+     parent="world"
+     joint_limits_parameters_file="$(arg joint_limit_params)"
+     kinematics_parameters_file="$(arg kinematics_params)"
+     physical_parameters_file="$(arg physical_params)"
+     visual_parameters_file="$(arg visual_params)"
+     safety_limits="$(arg safety_limits)"
+     safety_pos_margin="$(arg safety_pos_margin)"
+     safety_k_position="$(arg safety_k_position)"
+     use_sim="$(arg use_sim)"
+     initial_positions="${xacro.load_yaml(initial_positions_file)}"
+     >
+     <origin xyz="0 0 0" rpy="0 0 0" />          <!-- position robot in the world -->
+   </xacro:arm_mine_explorer>
+
+   <xacro:if value="$(arg use_sim)">
+    <!-- Gazebo plugins -->
+    <gazebo reference="world">
+    </gazebo>
+    <gazebo>
+      <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+        <parameters>$(find arm_mine_explorer_gazebo)/config/gazebo_controller_manager.yaml</parameters>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+
+</robot>
