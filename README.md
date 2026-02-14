@@ -102,4 +102,4 @@ The development of **Mine Explorer** is divided into five strategic phases, movi
 This is an ongoing project. For any architectural suggestions or bug reports, please open an issue or submit a pull request.
 
 **Author:** Théo Morel
-**Project Link:** xxx
+**Project Link:** https://github.com/theomorel195/mine_explorer
