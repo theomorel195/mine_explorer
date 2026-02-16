@@ -31,7 +31,7 @@ arm_controller:
       - position
       - velocity
 
-    state_publish_rate: 200.0
+    state_publish_rate: 20.0
     action_monitor_rate: 20.0
 
     allow_partial_joints_goal: false
@@ -46,15 +46,15 @@ base_controller:
     left_wheel_names: ["front_left_wheel_joint", "rear_left_wheel_joint"]
     right_wheel_names: ["front_right_wheel_joint", "rear_right_wheel_joint"]
 
-    wheel_separation: 0.512 #0.1  # 0.256  # 0.512
-    wheels_per_side: 1 # actually 2, but both are controlled by 1 signal
-    wheel_radius: 0.1651 # 0.015
+    wheel_separation: 0.5708
+    wheels_per_side: 1
+    wheel_radius: 0.1651
 
-    wheel_separation_multiplier: 1.0
+    wheel_separation_multiplier: 1.23
     left_wheel_radius_multiplier: 1.0
     right_wheel_radius_multiplier: 1.0
 
-    publish_rate: 50.0
+    publish_rate: 20.0
     odom_frame_id: odom
     base_frame_id: base_link
     pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
