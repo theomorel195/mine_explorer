@@ -67,7 +67,7 @@
     <!-- ========================= -->
     <!-- LiDAR -->
     <!-- ========================= -->
-    <xacro:VLP-16 parent="$(arg prefix_base)top_plate_link" name="$(arg name_lidar)" topic="/sensors/lidar/data">
+    <xacro:VLP-16 parent="$(arg prefix_base)top_plate_link" name="$(arg name_lidar)" topic="/sensors/lidar/data" samples="200" hz="5" max_range="15.0" lasers="8">
         <origin xyz="0.3 0 0" rpy="0 0 0" />
     </xacro:VLP-16>
 
@@ -75,6 +75,7 @@
     <!-- ========================= -->
     <!-- Front Camera -->
     <!-- ========================= -->
+    <!--
     <xacro:sensor_d455 parent="$(arg name_lidar)_base_link" name="front_rgbd">
         <origin xyz="0 0 0.08" rpy="0 0.26 0"/>
     </xacro:sensor_d455>
@@ -86,11 +87,12 @@
         min_range="0.4" 
         max_range="10.0" 
         baseline="0.095" />
-
+    -->
 
     <!-- ========================= -->
     <!-- Arm Camera -->
     <!-- ========================= --> 
+    <!--
     <xacro:sensor_d435 parent="$(arg prefix_arm)tool0" name="arm_rgbd">
         <origin xyz="0 0.0 0.0" rpy="0 0 0"/>
     </xacro:sensor_d435>
@@ -102,11 +104,12 @@
         min_range="0.1" 
         max_range="3.0" 
         baseline="0.050" />
-
+    -->
     
     <!-- ========================= -->
     <!-- Sonar -->
     <!-- ========================= -->
+    <!--
     <xacro:maxbotix_lv_ez name="sonar_front_left" parent="$(arg prefix_base)top_plate_link" topic="sensors/sonars/front_left">
         <origin xyz="0.41 0.22 -0.15" rpy="0 0 0.5"/> 
     </xacro:maxbotix_lv_ez>
@@ -130,7 +133,7 @@
     <xacro:maxbotix_lv_ez name="sonar_rear_right" parent="$(arg prefix_base)top_plate_link" topic="sensors/sonars/rear_right">
         <origin xyz="-0.57 -0.22 -0.15" rpy="0 0 -2.6"/> 
     </xacro:maxbotix_lv_ez>
-
+    -->
 
     <!-- ========================= -->
     <!-- IMU -->
@@ -145,7 +148,25 @@
     <!-- ========================= -->
     <gazebo>
         <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
-        <parameters>$(find mine_explorer_gazebo)/config/gazebo_controller_manager.yaml</parameters>
+            <parameters>$(find mine_explorer_gazebo)/config/gazebo_controller_manager.yaml</parameters>
+        </plugin>
+    </gazebo>
+
+    <!-- ========================= -->
+    <!-- Ground Truth -->
+    <!-- ========================= -->
+    
+    <gazebo>
+        <plugin name="mine_explorer_ground_truth" filename="libgazebo_ros_p3d.so">
+            <ros>
+                <remapping>odom:=ground_truth/odom</remapping>
+            </ros>
+            <update_rate>20.0</update_rate>
+            <body_name>base_footprint</body_name>
+            <frame_name>world</frame_name>
+            <xyz_offset>0 0 0</xyz_offset>
+            <rpy_offset>0 0 0</rpy_offset>
+            <gaussian_noise>0.0</gaussian_noise>
         </plugin>
     </gazebo>
 
