@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>mine_explorer_mapping</name>
+  <version>0.0.0</version>
+  <description>Mapping and Localization Package</description>
+  <maintainer email="theo.morel195@gmail.com">Théo Morel</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
+  <exec_depend>pointcloud_to_laserscan</exec_depend>
+  <exec_depend>nav2_map_server</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
