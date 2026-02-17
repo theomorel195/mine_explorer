@@ -125,7 +125,7 @@ def generate_launch_description():
         executable='spawn_entity.py',
         arguments=[
             '-topic', 'robot_description',
-            '-entity', 'base_mine_explorer_robot_system',
+            '-entity', LaunchConfiguration("name"),
         ],
         output='screen',
     )

@@ -80,20 +80,20 @@
     </joint>
 
     <!-- Husky wheel macros -->
-    <xacro:husky_wheel wheel_prefix="${prefix}front_left">
+    <xacro:husky_wheel wheel_prefix="${prefix}front_left" prefix="${prefix}">
       <origin xyz="${wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
     </xacro:husky_wheel>
-    <xacro:husky_wheel wheel_prefix="${prefix}front_right">
+    <xacro:husky_wheel wheel_prefix="${prefix}front_right" prefix="${prefix}">
       <origin xyz="${wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
     </xacro:husky_wheel>
-    <xacro:husky_wheel wheel_prefix="${prefix}rear_left">
+    <xacro:husky_wheel wheel_prefix="${prefix}rear_left" prefix="${prefix}">
       <origin xyz="${-wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
     </xacro:husky_wheel>
-    <xacro:husky_wheel wheel_prefix="${prefix}rear_right">
+    <xacro:husky_wheel wheel_prefix="${prefix}rear_right" prefix="${prefix}">
       <origin xyz="${-wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
     </xacro:husky_wheel>
 
-    <xacro:husky_decorate />
+    <xacro:husky_decorate prefix="${prefix}" />
 
   </xacro:macro>
 

@@ -2,7 +2,7 @@
 
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="husky_wheel">
 
-  <xacro:macro name="husky_wheel" params="wheel_prefix *joint_pose">
+  <xacro:macro name="husky_wheel" params="wheel_prefix *joint_pose prefix">
     <link name="${wheel_prefix}_wheel">
       <inertial>
         <mass value="2.637" />
@@ -32,7 +32,7 @@
     </gazebo>
 
     <joint name="${wheel_prefix}_wheel_joint" type="continuous">
-      <parent link="base_link"/>
+      <parent link="${prefix}base_link"/>
       <child link="${wheel_prefix}_wheel"/>
       <xacro:insert_block name="joint_pose"/>
       <axis xyz="0 1 0" rpy="0 0 0" />
