@@ -57,3 +57,21 @@ In your top-level `.urdf.xacro` file, you can instantiate the robot as follows:
 | `name` | `MobileBaseMineExplorerSystem` | Name of the hardware system. |
 | `prefix` | `""` | Prefix for all joint and link names (essential for avoiding name conflicts). |
 | `use_sim` | `true` | Toggle for Gazebo simulation compatibility and specific hardware plugins. |
+
+## Testing
+
+This package ensures the robot description is valid and follows ROS 2 coding standards. The test suite includes:
+
+* **URDF Validation**: Checks if the Xacro files compile correctly into a valid URDF and that the kinematic tree is consistent.
+* **Static Analysis**: Verifies that the Python launch files and configuration files follow PEP8 and ROS 2 style guidelines (using `flake8`, `pep257`, and `xmllint`).
+
+### Run the tests
+Execute the following command in your workspace:
+```bash
+colcon test --packages-select base_mine_explorer_description --event-handlers console_cohesion+
+```
+
+### Key checked performed
+
+1. **Linter checks:** Ensuring no unused imports or syntax errors in launch files.
+2. **URDF Parsing:** Validating the model with `check_urdf` or by ensuring the `robot_state_publisher`can parse the description without warnings.
