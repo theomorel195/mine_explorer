@@ -32,3 +32,16 @@ To run the simulationin Gazebo:
 ```bash
 ros2 launch arm_mine_explorer_gazebo gazebo.launch.py
 ```
+
+## Quality Assurance & Testing
+
+Each package in this repository includes its own suite of tests (Linters and Integration tests). 
+You can run the full test suite for the entire project to ensure everything is correctly installed and configured:
+
+```bash
+# Run tests for all packages in the project
+colcon test --packages-up-to arm_mine_explorer --event-handlers console_cohesion+
+
+# Check the overall summary
+colcon test-result --all --verbose
+```
