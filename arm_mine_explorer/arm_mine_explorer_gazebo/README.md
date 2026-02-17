@@ -49,3 +49,23 @@ ros2 launch arm_mine_explorer_gazebo gazebo.launch.py
 | `safety_k_position` | `20` | The k-position factor used by the safety controller for limit enforcement. |
 | `initial_positions_file` | `initial_positions.yaml` | Path to the YAML file defining the arm's default pose at start. |
 | `world` | `empty_world.model` | Path to world you want to use forthe simulation. |
+
+
+## Testing 
+
+This package uses `launch_testing` to verify the simulation's health. The tests check for:
+* **Static Analysis**: PEP8 compliance, docstring presence, and XML validity.
+* **Integration**: Successful launch of Gazebo and controllers, and active data publishing on `/joint_states`.
+
+### Run all tests
+To run the tests, use the following command in your workspace:
+```bash
+colcon test --packages-select arm_mine_explorer_gazebo --event-handlers console_cohesion+
+```
+
+### View test results
+
+After running the tests, you can see a detailed summary with :
+```bash
+colcon test-result --all --verbose
+```

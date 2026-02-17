@@ -77,3 +77,21 @@ This package is designed for high flexibility, allowing you to tune the arm's be
 | `safety_pos_margin` | `0.15` | The safety margin (in radians) added to the lower and upper joint limits. |
 | `safety_k_position` | `20` | The k-position factor used by the safety controller for limit enforcement. |
 | `initial_positions_file` | `initial_positions.yaml` | Path to the YAML file defining the arm's default pose at start. |
+
+## Testing
+
+This package ensures the robot description is valid and follows ROS 2 coding standards. The test suite includes:
+
+* **URDF Validation**: Checks if the Xacro files compile correctly into a valid URDF and that the kinematic tree is consistent.
+* **Static Analysis**: Verifies that the Python launch files and configuration files follow PEP8 and ROS 2 style guidelines (using `flake8`, `pep257`, and `xmllint`).
+
+### Run the tests
+Execute the following command in your workspace:
+```bash
+colcon test --packages-select arm_mine_explorer_description --event-handlers console_cohesion+
+```
+
+### Key checked performed
+
+1. **Linter checks:** Ensuring no unused imports or syntax errors in launch files.
+2. **URDF Parsing:** Validating the model with `check_urdf` or by ensuring the `robot_state_publisher`can parse the description without warnings.
