@@ -162,7 +162,7 @@
                 <remapping>odom:=ground_truth/odom</remapping>
             </ros>
             <update_rate>20.0</update_rate>
-            <body_name>base_footprint</body_name>
+            <body_name>$(arg prefix_base)base_footprint</body_name>
             <frame_name>world</frame_name>
             <xyz_offset>0 0 0</xyz_offset>
             <rpy_offset>0 0 0</rpy_offset>
