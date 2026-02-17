@@ -40,7 +40,7 @@ You can run the full test suite for the entire project to ensure everything is c
 
 ```bash
 # Run tests for all packages in the project
-colcon test --packages-up-to arm_mine_explorer --event-handlers console_cohesion+
+colcon test --packages-select arm_mine_explorer_description arm_mine_explorer_gazebo --event-handlers console_cohesion+
 
 # Check the overall summary
 colcon test-result --all --verbose
