@@ -12,23 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import unittest
 
+from ament_index_python.packages import get_package_share_directory
 import launch
 import launch_ros.actions
 import launch_testing.actions
 import pytest
+import xacro
 
 
 @pytest.mark.launch_test
 def generate_test_description():
     """Launch the robot_state_publisher node with the description."""
-    robot_description_content = '<?xml version="1.0"?><robot name="test"></robot>'
+    pkg_name = 'base_mine_explorer_description'
+    pkg_path = get_package_share_directory(pkg_name)
+    xacro_file = os.path.join(pkg_path, 'urdf', 'robot.urdf.xacro')
+
+    mappings = {
+        'prefix': '',
+        'name': 'MobileBaseMineExplorerSystem',
+        'use_sim': 'true',
+    }
+
+    robot_description_config = xacro.process_file(xacro_file, mappings=mappings)
+    robot_xml = robot_description_config.toxml()
 
     robot_state_publisher_node = launch_ros.actions.Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        parameters=[{'robot_description': robot_description_content}]
+        parameters=[{'robot_description': robot_xml}]
     )
 
     return launch.LaunchDescription([
