@@ -145,6 +145,30 @@ class TestGazeboIntegration(unittest.TestCase):
         self.node.destroy_subscription(sub)
         self.assertGreater(len(msgs_received), 0, f'No messages received on {lidar_topic}!')
 
+    def test_imu_topic_if_included(self):
+        """Check if IMU is present in the URDF and its topic publishes data."""
+        if not is_link_present(self.node, 'imu_link'):
+            self.skipTest('IMU not included in the URDF, skipping test.')
+
+        msgs_received = []
+        imu_topic = '/sensors/imu/data'
+        sub = self.node.create_subscription(
+            rclpy.qos.QoSProfile(depth=10),
+            imu_topic,
+            lambda msg: msgs_received.append(msg),
+            10
+        )
+
+        # Wait up to 15s for first IMU message
+        end_time = self.node.get_clock().now().nanoseconds + 15e9
+        while rclpy.ok() and len(msgs_received) == 0:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
+            if self.node.get_clock().now().nanoseconds > end_time:
+                break
+
+        self.node.destroy_subscription(sub)
+        self.assertGreater(len(msgs_received), 0, f'No messages received on {imu_topic}!')
+
 
 @launch_testing.post_shutdown_test()
 class TestGazeboLaunchAfterShutdown(unittest.TestCase):
