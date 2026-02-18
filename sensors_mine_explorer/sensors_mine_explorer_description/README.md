@@ -74,3 +74,21 @@ To add a sensor to your robot, include the specific Xacro macro in your main URD
 
 Each sensor includes a Gazebo plugin (`̀libgazebo_ros_ray_sensor.so`, `̀libgazebo_ros_camera.so`, etc.) to simulate realistic data streams. The parameters (noise, update rate, resolution) can be adjusted in the respective `.urdf.xacro` files. 
 
+## Testing 
+
+This package uses `launch_testing` to verify the simulation's health. The tests check for:
+* **Static Analysis**: PEP8 compliance, docstring presence, and XML validity.
+* **Integration**: Successful launch of Gazebo and controllers, and active data publishing on `/joint_states`.
+
+### Run all tests
+To run the tests, use the following command in your workspace:
+```bash
+colcon test --packages-select sensors_mine_explorer_description --event-handlers console_cohesion+
+```
+
+### View test results
+
+After running the tests, you can see a detailed summary with :
+```bash
+colcon test-result --all --verbose
+```
