@@ -41,6 +41,17 @@ def generate_test_description():
     ])
 
 
+def is_link_present(node, link_name: str) -> bool:
+    """Check if a link exists in the robot_description."""
+    from urdf_parser_py.urdf import URDF
+    robot_description_param = '/robot_description'
+    if not node.has_parameter(robot_description_param):
+        return False
+    urdf_str = node.get_parameter(robot_description_param).get_parameter_value().string_value
+    robot = URDF.from_xml_string(urdf_str)
+    return any(link.name == link_name for link in robot.links)
+
+
 class TestGazeboIntegration(unittest.TestCase):
     """Full integration test suite for Gazebo and ROS 2 controllers."""
 
@@ -109,6 +120,30 @@ class TestGazeboIntegration(unittest.TestCase):
 
         self.assertTrue(arm_controller_found, 'Arm controller topic not found!')
         self.assertTrue(base_controller_found, 'Base controller topic not found!')
+
+    def test_lidar_topic_if_included(self):
+        """Check if LIDAR is present in the URDF and its topic publishes data."""
+        if not is_link_present(self.node, 'lidar_base_link'):
+            self.skipTest('LIDAR not included in the URDF, skipping test.')
+
+        msgs_received = []
+        lidar_topic = '/sensors/lidar/data'
+        sub = self.node.create_subscription(
+            rclpy.qos.QoSProfile(depth=10),
+            lidar_topic,
+            lambda msg: msgs_received.append(msg),
+            10
+        )
+
+        # Wait up to 15s for first LIDAR message
+        end_time = self.node.get_clock().now().nanoseconds + 15e9
+        while rclpy.ok() and len(msgs_received) == 0:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
+            if self.node.get_clock().now().nanoseconds > end_time:
+                break
+
+        self.node.destroy_subscription(sub)
+        self.assertGreater(len(msgs_received), 0, f'No messages received on {lidar_topic}!')
 
 
 @launch_testing.post_shutdown_test()
