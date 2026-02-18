@@ -45,5 +45,3 @@ To start the full Gazebo simulation with controllers and data from sensors :
 ```bash
 ros2 launch mine_explorer_gazebo gazebo.launch.py
 ```
-
-

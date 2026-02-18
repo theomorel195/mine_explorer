@@ -52,3 +52,23 @@ Inside the ̀`scripts/` folder, the `compute_variance.py` tool allow you to:
 The odometry used in this package has been calibrated against simulation Ground Truth (GT) to ensure maximum precision:
 * **Wheel Separation Multiplier:** Set to **1.23** in the controller configuration to ensure perfect yaw matching during rotations.
 * **TF Stability:** `transform_timeout`and `publish_rate` are optimized to prevent "TF_OLD_DATA" warnings in high-load simulation scenarios.
+
+## Tests
+
+This package includes unit tests for the robot controllers as well as code style checks using Flake8.
+
+### Running ROS 2 Unit Tests
+
+To run the unit tests, make sure you are at the root of your ROS 2 workspace :
+
+```bash
+colcon test --packages-select mine_explorer_control
+```
+
+After the tests finish, you can view detailed results with : 
+
+```bash
+colcon test-result --verbose
+```
+
+This checks the proper functioning of the robot's controllers in Gazebo, as well as the EKF and the sensors (IMU, odom)
