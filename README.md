@@ -1,4 +1,4 @@
-# Mine Explorer Project 🛠️💣
+# Mine Explorer Project 🛠️💣 (Ongoing project)
 
 ![ROS 2](https://img.shields.io/badge/ROS2-Humble-green)
 
@@ -47,7 +47,7 @@ mkdir -p ~/mine_explorer_ws/src
 cd ~/mine_explorer_ws/src
 
 # Clone the project
-git clone -b humble <your-repository-url> .
+git clone -b humble https://github.com/theomorel195/mine_explorer
 
 # Install dependencies
 rosdep update
