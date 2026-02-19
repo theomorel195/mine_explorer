@@ -28,7 +28,6 @@ find_package(mine_explorer_description REQUIRED)
 
 install(
   DIRECTORY
-    worlds
     config
     launch
   DESTINATION share/${PROJECT_NAME}

@@ -67,7 +67,7 @@ def generate_launch_description():
         DeclareLaunchArgument('safety_k_position', default_value='20'),
         DeclareLaunchArgument(
             'world',
-            default_value='empty.world',
+            default_value='world_1.world',
         )
     ]
 
