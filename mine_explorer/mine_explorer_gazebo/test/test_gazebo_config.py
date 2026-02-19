@@ -40,6 +40,6 @@ def test_gazebo_controller_config():
 
 def test_world_file_exists():
     """Check if the empty world model file exists."""
-    pkg_path = get_package_share_directory('mine_explorer_gazebo')
-    world_path = os.path.join(pkg_path, 'worlds', 'empty_world.model')
+    pkg_path = get_package_share_directory('mine_explorer_resources')
+    world_path = os.path.join(pkg_path, 'worlds', 'empty.world')
     assert os.path.exists(world_path), f'World file missing: {world_path}'

@@ -27,7 +27,6 @@ def generate_launch_description():
     # Packages
     arm_description_pkg_share = FindPackageShare('arm_mine_explorer_description')
     mine_description_pkg_share = FindPackageShare('mine_explorer_description')
-    mine_gazebo_pkg_share = FindPackageShare('mine_explorer_gazebo')
 
     # Arguments
     declared_arguments = [
@@ -67,7 +66,7 @@ def generate_launch_description():
         DeclareLaunchArgument('safety_k_position', default_value='20'),
         DeclareLaunchArgument(
             'world',
-            default_value='world_1.world',
+            default_value='empty.world',
         )
     ]
 
