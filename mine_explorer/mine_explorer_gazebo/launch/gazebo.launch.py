@@ -67,11 +67,7 @@ def generate_launch_description():
         DeclareLaunchArgument('safety_k_position', default_value='20'),
         DeclareLaunchArgument(
             'world',
-            default_value=PathJoinSubstitution([
-                mine_gazebo_pkg_share,
-                'worlds',
-                'empty_world.model'
-            ])
+            default_value='empty.world',
         )
     ]
 
@@ -121,7 +117,9 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         parameters=[
-            {'robot_description': robot_description_file},
+            {'robot_description': robot_description_file,
+             'use_sim_time': True,
+             'publish_frequency': 50.0},
         ],
         output='screen',
     )
@@ -180,6 +178,12 @@ def generate_launch_description():
     )
 
     # Gazebo
+    world_file = PathJoinSubstitution([
+        FindPackageShare('mine_explorer_resources'),
+        'worlds',
+        LaunchConfiguration('world')
+    ])
+
     gazebo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
@@ -192,7 +196,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             'verbose': 'false',
-            'world': LaunchConfiguration('world'),
+            'world': world_file,
         }.items(),
     )
 

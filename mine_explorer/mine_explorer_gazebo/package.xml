@@ -16,6 +16,7 @@
   <depend>robot_state_publisher</depend>
   <depend>xacro</depend>
   <depend>mine_explorer_description</depend>
+  <depend>mine_explorer_resources</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
