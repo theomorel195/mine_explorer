@@ -1,0 +1,24 @@
+trajectory:
+  - linear: 0.0
+    angular: -0.8
+    duration: 0.7  # Turn for 0.7rad
+
+  - linear: 1.0
+    angular: 0.0
+    duration: 2.5   # Forward 2.5m
+
+  - linear: 0.0
+    angular: 0.8
+    duration: 1.9   # Turn for 1.9rad
+
+  - linear: 1.0
+    angular: 0.0
+    duration: 5.5  # Forward 5.5m
+
+  - linear: 0.0
+    angular: 0.8
+    duration: 2.2   # Turn for 2.2rad
+
+  - linear: 1.0
+    angular: 0.0
+    duration: 5.0  # Forward 5m
