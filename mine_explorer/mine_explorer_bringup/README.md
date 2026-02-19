@@ -36,3 +36,21 @@ You can customize the launch using the following arguments:
 ```bash
 ros2 launch mine_explorer_bringup bringup_mine_slam2d_ekf.launch.py world:=world_1.world
 ```
+
+## Tests
+
+This package includes unit tests for the entire simulation as well as code style checks using Flake8.
+
+### Running ROS 2 Unit Tests
+
+To run the unit tests, make sure you are at the root of your ROS 2 workspace :
+
+```bash
+colcon test --packages-select mine_explorer_bringup --event-handlers console_cohesion+
+```
+
+After the tests finish, you can view detailed results with : 
+
+```bash
+colcon test-result --verbose
+```

@@ -13,6 +13,10 @@
   <depend>mine_explorer_control</depend>
   <depend>mine_explorer_mapping</depend>
 
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>mine_explorer_resources</test_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>
