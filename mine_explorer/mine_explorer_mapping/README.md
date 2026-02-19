@@ -58,3 +58,21 @@ Since the robot operated in a 3D environment, this package extracts a 2D slice f
 * **3D SLAM:** Implementation of a full 3D SLAM solution to capture the volumetric complexity environment.
 * **Multi-Level Mapping:** Support for vertical shafts.
 
+## Testing 
+
+This package uses `launch_testing` to verify the simulation's health. The tests check for:
+* **Static Analysis**: PEP8 compliance, docstring presence, and XML validity.
+* **Integration**: Successful launch of Gazebo simulation and SLAM, and active data publishing on `/sensors/lidar/scan_2d` & `/map`.
+
+### Run all tests
+To run the tests, use the following command in your workspace:
+```bash
+colcon test --packages-select mine_explorer_mapping --event-handlers console_cohesion+
+```
+
+### View test results
+
+After running the tests, you can see a detailed summary with :
+```bash
+colcon test-result --all --verbose
+```
