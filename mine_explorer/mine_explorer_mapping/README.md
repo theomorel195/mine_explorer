@@ -24,6 +24,7 @@ sudo apt update
 sudo apt install ros-humble-slam-toolbox 
 sudo apt install ros-humble-pointcloud-to-laserscan
 sudo apt install ros-humble-nav2-map-server
+sudo apt install ros-humble-grid-map
 ```
 
 ### Launching the Mapping Pipeline 
