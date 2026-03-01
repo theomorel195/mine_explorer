@@ -23,9 +23,26 @@ public:
 private:
   void pointCloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
 
+  bool transformPointCloud(
+      const sensor_msgs::msg::PointCloud2 &input_cloud,
+      sensor_msgs::msg::PointCloud2 &output_cloud,
+      const std::string &target_frame,
+      const std::string &source_frame);
+
+  bool getFramePosition(const std::string &target_frame,
+                        const std::string &source_frame,
+                        double &x, double &y);
+                      
+  pcl::PointCloud<pcl::PointXYZ>::Ptr filterPointsInBoundingBox(
+      const pcl::PointCloud<pcl::PointXYZ>::Ptr &input_cloud);
+  
+  pcl::PointCloud<pcl::PointXYZ>::Ptr voxelizePointCloud(
+      const pcl::PointCloud<pcl::PointXYZ>::Ptr &input_cloud);
+
+  void updateElevationMap(const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud_map);
+  bool getRollingWindowSubmap(grid_map::GridMap &submap);
+
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_cloud_;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_cloud_;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_voxelized_cloud_;
   rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr pub_map_;
 
   tf2_ros::Buffer tf_buffer_;
@@ -39,8 +56,8 @@ private:
 
   grid_map::GridMap elevation_map_;
   float map_resolution_;
-  float map_length_x_;
-  float map_length_y_;
+  float map_length_x_, map_length_y_;
+  float sub_map_length_x_, sub_map_length_y_;
 };
 
 #endif

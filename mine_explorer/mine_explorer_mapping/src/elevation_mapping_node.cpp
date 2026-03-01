@@ -1,5 +1,4 @@
 #include "mine_explorer_mapping/elevation_mapping_node.hpp"
-
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -11,14 +10,6 @@ ElevationMappingNode::ElevationMappingNode() : Node("elevation_mapping_node"),
         "/sensors/lidar/data",
         10,
         std::bind(&ElevationMappingNode::pointCloudCallback, this, std::placeholders::_1));
-
-    pub_cloud_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
-        "/sensors/lidar/data_filtered",
-        10);
-
-    pub_voxelized_cloud_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
-        "/sensors/lidar/data_voxelized",
-        10);
 
     pub_map_ = this->create_publisher<grid_map_msgs::msg::GridMap>(
         "/mapping/elevation_map",
@@ -36,6 +27,8 @@ ElevationMappingNode::ElevationMappingNode() : Node("elevation_mapping_node"),
     map_resolution_ = 0.05f;
     map_length_x_ = 100.0f;
     map_length_y_ = 100.0f;
+    sub_map_length_x_ = 10.0f;
+    sub_map_length_y_ = 10.0f;
         
     elevation_map_.setFrameId("map");
     elevation_map_.setGeometry(grid_map::Length(map_length_x_, map_length_y_), map_resolution_);
@@ -45,153 +38,166 @@ ElevationMappingNode::ElevationMappingNode() : Node("elevation_mapping_node"),
     RCLCPP_INFO(this->get_logger(), "Elevation mapping node started.");
 }
 
-void ElevationMappingNode::pointCloudCallback(
-    const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+bool ElevationMappingNode::transformPointCloud(
+    const sensor_msgs::msg::PointCloud2 &input_cloud,
+    sensor_msgs::msg::PointCloud2 &output_cloud,
+    const std::string &target_frame,
+    const std::string &source_frame)
 {
-    // Transform lidar_base_link -> base_link
-    sensor_msgs::msg::PointCloud2 cloud_transformed;
-
     try
     {
         geometry_msgs::msg::TransformStamped transform =
-        tf_buffer_.lookupTransform(
-            "base_link",
-            msg->header.frame_id,
-            tf2::TimePointZero,
-            tf2::durationFromSec(0.1));
+            tf_buffer_.lookupTransform(
+                target_frame,
+                source_frame,
+                tf2::TimePointZero,
+                tf2::durationFromSec(0.1));
 
-        tf2::doTransform(*msg, cloud_transformed, transform);
+        tf2::doTransform(input_cloud, output_cloud, transform);
+        return true;
     }
     catch (tf2::TransformException &ex)
     {
-        RCLCPP_WARN(this->get_logger(), "TF failed: %s", ex.what());
-        return;
+        RCLCPP_WARN(this->get_logger(), "TF failed from %s to %s: %s",
+                    source_frame.c_str(), target_frame.c_str(), ex.what());
+        return false;
     }
+}
 
-    // Bounding Box Filter
-    pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::fromROSMsg(cloud_transformed, *pcl_cloud);
+bool ElevationMappingNode::getFramePosition(const std::string &target_frame,
+                                            const std::string &source_frame,
+                                            double &x, double &y)
+{
+    try
+    {
+        geometry_msgs::msg::TransformStamped tf_stamp =
+            tf_buffer_.lookupTransform(
+                target_frame,
+                source_frame,
+                tf2::TimePointZero,
+                tf2::durationFromSec(0.1));
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+        x = tf_stamp.transform.translation.x;
+        y = tf_stamp.transform.translation.y;
+        return true;
+    }
+    catch (tf2::TransformException &ex)
+    {
+        RCLCPP_WARN(this->get_logger(), "TF failed from %s to %s: %s",
+                    source_frame.c_str(), target_frame.c_str(), ex.what());
+        return false;
+    }
+}
 
-    for (const auto &point : pcl_cloud->points)
+pcl::PointCloud<pcl::PointXYZ>::Ptr ElevationMappingNode::filterPointsInBoundingBox(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr &input_cloud)
+{
+    auto filtered_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    for (const auto &point : input_cloud->points)
     {
         bool inside_robot =
-        (point.x > x_min_ && point.x < x_max_) &&
-        (point.y > y_min_ && point.y < y_max_) &&
-        (point.z > z_min_ && point.z < z_max_);
+            (point.x > x_min_ && point.x < x_max_) &&
+            (point.y > y_min_ && point.y < y_max_) &&
+            (point.z > z_min_ && point.z < z_max_);
 
         if (!inside_robot)
-        {
-        filtered_cloud->points.push_back(point);
-        }
+            filtered_cloud->points.push_back(point);
     }
 
     filtered_cloud->width = filtered_cloud->points.size();
     filtered_cloud->height = 1;
     filtered_cloud->is_dense = true;
 
-    sensor_msgs::msg::PointCloud2 output;
-    pcl::toROSMsg(*filtered_cloud, output);
+    return filtered_cloud;
+}
 
-    output.header.frame_id = "base_link";
-    output.header.stamp = msg->header.stamp;
-
-    pub_cloud_->publish(output);
-
-    // Voxel Filter
-    pcl::PointCloud<pcl::PointXYZ>::Ptr voxel_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+pcl::PointCloud<pcl::PointXYZ>::Ptr ElevationMappingNode::voxelizePointCloud(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr &input_cloud)
+{
+    auto voxel_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
     pcl::VoxelGrid<pcl::PointXYZ> voxel_filter;
-
-    voxel_filter.setInputCloud(filtered_cloud);
+    voxel_filter.setInputCloud(input_cloud);
     voxel_filter.setLeafSize(voxel_size_, voxel_size_, voxel_size_);
     voxel_filter.filter(*voxel_cloud);
+    return voxel_cloud;
+}
 
-    sensor_msgs::msg::PointCloud2 voxel_msg;
-    pcl::toROSMsg(*voxel_cloud, voxel_msg);
-
-    voxel_msg.header.frame_id = "base_link";
-    voxel_msg.header.stamp = msg->header.stamp;
-
-    pub_voxelized_cloud_->publish(voxel_msg);
-
-    // Transform base_link->map
-    sensor_msgs::msg::PointCloud2 voxel_map;
-    try
+void ElevationMappingNode::updateElevationMap(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud_map)
+{
+    for (const auto &point : cloud_map->points)
     {
-        geometry_msgs::msg::TransformStamped transform =
-            tf_buffer_.lookupTransform(
-                "map",
-                "base_link",
-                tf2::TimePointZero,
-                tf2::durationFromSec(0.1));
-
-        tf2::doTransform(voxel_msg, voxel_map, transform);
-    }
-    catch (tf2::TransformException &ex)
-    {
-        RCLCPP_WARN(this->get_logger(), "TF failed: %s", ex.what());
-        return;
-    }
-
-    // Elevation map
-    pcl::PointCloud<pcl::PointXYZ>::Ptr voxel_cloud_map(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::fromROSMsg(voxel_map, *voxel_cloud_map);
-
-    for (const auto &point : voxel_cloud_map->points) {
-        float x = static_cast<float>(point.x);
-        float y = static_cast<float>(point.y);
-        float z = static_cast<float>(point.z);
-
-        grid_map::Position position(x, y);
-
         grid_map::Index index;
-        if (elevation_map_.getIndex(grid_map::Position(x, y), index)) {
+        if (elevation_map_.getIndex(grid_map::Position(point.x, point.y), index))
+        {
             float &cell = elevation_map_.at("elevation", index);
-            if (z > cell) {
-                cell = z;
-            }
+            if (point.z > cell) cell = point.z;
         }
     }
+}
 
-    // Rolling Window
-    double robot_x = 0.0;
-    double robot_y = 0.0;
-    try
-    {
-        geometry_msgs::msg::TransformStamped tf_robot =
-            tf_buffer_.lookupTransform(
-                "map",
-                "base_link",
-                tf2::TimePointZero,
-                tf2::durationFromSec(0.1));
-
-        robot_x = tf_robot.transform.translation.x;
-        robot_y = tf_robot.transform.translation.y;
+bool ElevationMappingNode::getRollingWindowSubmap(grid_map::GridMap &submap)
+{
+    double robot_x = 0.0, robot_y = 0.0;
+    if (!getFramePosition("map", "base_link", robot_x, robot_y)) {
+        return false;
     }
-    catch (tf2::TransformException &ex)
-    {
-        RCLCPP_WARN(this->get_logger(), "Rolling map TF failed: %s", ex.what());
-        return;
-    }
-
-    float window_size = 10.0f;
     grid_map::Position robot_position(robot_x, robot_y);
 
     bool success = false;
-
-    grid_map::GridMap submap = elevation_map_.getSubmap(
+    submap = elevation_map_.getSubmap(
         robot_position,
-        grid_map::Length(window_size, window_size),
+        grid_map::Length(sub_map_length_x_, sub_map_length_y_),
         success);
 
     if (!success) {
         RCLCPP_WARN(this->get_logger(), "Failed to get submap around robot!");
+        return false;
+    }
+    return true;
+}
+
+void ElevationMappingNode::pointCloudCallback(
+    const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+{
+    // Transform lidar_base_link -> base_link
+    sensor_msgs::msg::PointCloud2 cloud_transformed;
+    if (!transformPointCloud(*msg, cloud_transformed, "base_link", msg->header.frame_id)) {
         return;
     }
 
-    auto map_msg_ptr = grid_map::GridMapRosConverter::toMessage(submap);
-    pub_map_->publish(*map_msg_ptr);
+    // Convert to PCL
+    auto pcl_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    pcl::fromROSMsg(cloud_transformed, *pcl_cloud);
+
+    // Filter points on robot
+    auto filtered_cloud = filterPointsInBoundingBox(pcl_cloud);
+
+    // Voxelize
+    auto voxel_cloud = voxelizePointCloud(filtered_cloud);
+
+    // Transform base_link->map
+    sensor_msgs::msg::PointCloud2 voxel_msg;
+    pcl::toROSMsg(*voxel_cloud, voxel_msg);
+    voxel_msg.header.frame_id = "base_link";
+    voxel_msg.header.stamp = msg->header.stamp;
+
+    sensor_msgs::msg::PointCloud2 voxel_map;
+    if (!transformPointCloud(voxel_msg, voxel_map, "map", "base_link")) {
+        return;
+    }
+
+    // Update elevation map
+    auto voxel_cloud_map = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    pcl::fromROSMsg(voxel_map, *voxel_cloud_map);
+    updateElevationMap(voxel_cloud_map);
+
+    // Rolling Window
+    grid_map::GridMap submap;
+    if (getRollingWindowSubmap(submap)) {
+        auto map_msg_ptr = grid_map::GridMapRosConverter::toMessage(submap);
+        pub_map_->publish(*map_msg_ptr);
+    }
 }
 
 int main(int argc, char **argv)
