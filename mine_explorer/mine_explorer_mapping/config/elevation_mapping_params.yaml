@@ -1,0 +1,26 @@
+elevation_mapping_node:
+  ros__parameters:
+    # Topics
+    input_cloud_topic: "/sensors/lidar/data"
+    output_map_topic: "/mapping/elevation_map"
+
+    # Mapping parameters
+    voxel_size: 0.05
+    map_resolution: 0.05
+
+    map_length_x: 100.0
+    map_length_y: 100.0
+
+    # Submap parameters
+    sub_map_length: 10.0
+    sub_map_length_x: 10.0
+    sub_map_length_y: 10.0
+
+    # Robot filtering (remove robot points)
+    robot_filter:
+      x_min: -0.7
+      x_max: 0.7
+      y_min: -0.45
+      y_max: 0.45
+      z_min: -0.25
+      z_max: 0.8

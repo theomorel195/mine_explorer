@@ -6,36 +6,63 @@ ElevationMappingNode::ElevationMappingNode() : Node("elevation_mapping_node"),
   tf_buffer_(this->get_clock()),
   tf_listener_(tf_buffer_)
 {
-    sub_cloud_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-        "/sensors/lidar/data",
-        10,
-        std::bind(&ElevationMappingNode::pointCloudCallback, this, std::placeholders::_1));
+    // Topic parameters
+    std::string input_cloud_topic =
+        this->declare_parameter("input_cloud_topic", "/sensors/lidar/data");
+    std::string output_map_topic =
+        this->declare_parameter("output_map_topic", "/mapping/elevation_map");
 
-    pub_map_ = this->create_publisher<grid_map_msgs::msg::GridMap>(
-        "/mapping/elevation_map",
-        10);
+    // Map / voxel parameters
+    voxel_size_ = this->declare_parameter("voxel_size", 0.05);
+    map_resolution_ = this->declare_parameter("map_resolution", 0.05);
 
-    x_min_ = -0.7;
-    x_max_ = 0.7;
-    y_min_ = -0.45;
-    y_max_ = 0.45;
-    z_min_ = -0.25;
-    z_max_ = 0.8;
+    // Submap parameters
+    double sub_map_length = this->declare_parameter("sub_map_length", 10.0);
+    sub_map_length_x_ = this->declare_parameter("sub_map_length_x", sub_map_length);
+    sub_map_length_y_ = this->declare_parameter("sub_map_length_y", sub_map_length);
 
-    voxel_size_ = 0.05f;
+    // Map size totale
+    map_length_x_ = this->declare_parameter("map_length_x", 100.0);
+    map_length_y_ = this->declare_parameter("map_length_y", 100.0);
 
-    map_resolution_ = 0.05f;
-    map_length_x_ = 100.0f;
-    map_length_y_ = 100.0f;
-    sub_map_length_x_ = 10.0f;
-    sub_map_length_y_ = 10.0f;
-        
+    // Bounding box parameters
+    x_min_ = this->declare_parameter("robot_filter.x_min", -0.7);
+    x_max_ = this->declare_parameter("robot_filter.x_max", 0.7);
+    y_min_ = this->declare_parameter("robot_filter.y_min", -0.45);
+    y_max_ = this->declare_parameter("robot_filter.y_max", 0.45);
+    z_min_ = this->declare_parameter("robot_filter.z_min", -0.25);
+    z_max_ = this->declare_parameter("robot_filter.z_max", 0.8);
+
     elevation_map_.setFrameId("map");
     elevation_map_.setGeometry(grid_map::Length(map_length_x_, map_length_y_), map_resolution_);
     elevation_map_.setBasicLayers({"elevation"});
     elevation_map_.add("elevation", 0.0f);
 
+    sub_cloud_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
+        input_cloud_topic,
+        10,
+        std::bind(&ElevationMappingNode::pointCloudCallback, this, std::placeholders::_1));
+
+    pub_map_ = this->create_publisher<grid_map_msgs::msg::GridMap>(
+        output_map_topic,
+        10);
+
     RCLCPP_INFO(this->get_logger(), "Elevation mapping node started.");
+    RCLCPP_INFO(this->get_logger(), "\n=========== Parameters ===========");
+    RCLCPP_INFO(this->get_logger(), "\n[Topics]");
+    RCLCPP_INFO(this->get_logger(), "  input_cloud_topic  : %s", input_cloud_topic.c_str());
+    RCLCPP_INFO(this->get_logger(), "  output_map_topic   : %s", output_map_topic.c_str());
+    RCLCPP_INFO(this->get_logger(), "\n[Mapping]");
+    RCLCPP_INFO(this->get_logger(), "  voxel_size         : %.3f", voxel_size_);
+    RCLCPP_INFO(this->get_logger(), "  map_resolution     : %.3f", map_resolution_);
+    RCLCPP_INFO(this->get_logger(), "  map_size           : %.1f x %.1f", map_length_x_, map_length_y_);
+    RCLCPP_INFO(this->get_logger(), "\n[Submap]");
+    RCLCPP_INFO(this->get_logger(), "  submap_size        : %.1f x %.1f", sub_map_length_x_, sub_map_length_y_);
+    RCLCPP_INFO(this->get_logger(), "\n[Robot filter]");
+    RCLCPP_INFO(this->get_logger(), "  x range            : [%.2f : %.2f]", x_min_, x_max_);
+    RCLCPP_INFO(this->get_logger(), "  y range            : [%.2f : %.2f]", y_min_, y_max_);
+    RCLCPP_INFO(this->get_logger(), "  z range            : [%.2f : %.2f]", z_min_, z_max_);
+    RCLCPP_INFO(this->get_logger(), "\n==================================");
 }
 
 bool ElevationMappingNode::transformPointCloud(
